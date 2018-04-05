@@ -2,4 +2,5 @@
 venv
 # pycharm settings
 .idea
-
+# file extensions
+*.pyc
