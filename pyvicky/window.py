@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog, QTextEdit
+from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog, \
+    QTextEdit, QMessageBox
 from PyQt5.QtGui import QIcon
 
 import logging
@@ -55,7 +56,7 @@ class Window(QMainWindow):
         new_button = QAction('New file', self)
         new_button.setShortcut('Ctrl+N')
         new_button.setStatusTip('New file')
-        new_button.triggered.connect(self.close)
+        new_button.triggered.connect(self.new_file)
 
         save_button = QAction('Save file', self)
         save_button.setShortcut('Ctrl+S')
@@ -117,6 +118,8 @@ class Window(QMainWindow):
                                                    "All Files (*);;Python Files (*.py)", options=options)
         if file_name:
             logger.debug(file_name)
+            self.open_file(file_name)
+            logger.info('File opened')
 
     def open_file_names_dialog(self):
         """
@@ -129,6 +132,28 @@ class Window(QMainWindow):
                                                 "All Files (*);;Python Files (*.py)", options=options)
         if files:
             logger.debug(files)
+            logger.info('Files opened')
+
+
+    def open_file(self, filename):
+        try:
+            self.text.setText(open(filename).read())
+
+        except IOError as io_e:
+            logger.error(io_e)
+            sys.exit(1)
+
+        except Exception as e:
+            logger.error(e)
+            sys.exit(1)
+
+    def open_files(self):
+        # TODO: not implemented, implement, when tabs will be created
+        filename, _ = QFileDialog.getOpenFileName(self, "Open File", '', "All Files (*)")
+        try:
+            self.text.setText(open(filename).read())
+        except:
+            True
 
     def save_file_dialog(self):
         """
@@ -138,15 +163,71 @@ class Window(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         file_name, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
-                                                   "All Files (*);;Text Files (*.txt)", options=options)
+                                                   "All Files (*);;Text Files (*.txt);;Python Files (*.py)",
+                                                   options=options)
         if file_name:
             logger.debug(file_name)
+            self.save_file(file_name)
+            logger.info('File saved')
+
+    def save_file(self, file_name):
+        try:
+            with open(file_name, "w") as CurrentFile:
+                CurrentFile.write(self.text.toPlainText())
+            CurrentFile.close()
+
+        except IOError as io_e:
+            logger.error(io_e)
+            sys.exit(1)
+
+        except Exception as e:
+            logger.error(e)
+            sys.exit(1)
 
     def copy_func(self):
         self.text.copy()
 
     def paste_func(self):
         self.text.paste()
+
+    def track_unsaved_file(self):
+        destroy = self.text.document().isModified()
+        # print(destroy)
+
+        if not destroy:
+            return False
+        else:
+            detour = QMessageBox.question(self,
+                                          "Hold your horses.",
+                                          "File has unsaved changes. Save now?",
+                                          QMessageBox.Yes | QMessageBox.No |
+                                          QMessageBox.Cancel)
+            if detour == QMessageBox.Cancel:
+                return True
+            elif detour == QMessageBox.No:
+                return False
+            elif detour == QMessageBox.Yes:
+                return self.save_file_dialog()
+
+        return True
+
+    def closeEvent(self, event):
+        """
+        not a method, but event from QMainWindow
+        so, its name should be camel - cased
+        :param event:
+        :return:
+        """
+        if self.track_unsaved_file():
+            event.ignore()
+        else:
+            self.close_application()
+
+    def new_file(self):
+        # TODO: implement tabs instead of clearing
+        if not self.track_unsaved_file():
+            self.text.clear()
+            logger.info('File created')
 
 
 class DirectoriesTreeView:
