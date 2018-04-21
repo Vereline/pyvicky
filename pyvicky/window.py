@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow
+from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog
 from PyQt5.QtGui import QIcon
 
 import logging
@@ -13,6 +13,7 @@ class Window(QMainWindow):
     """
     Main window class
     """
+
     def __init__(self, x, y, filename=''):
         super().__init__()
         self.resize(x, y)
@@ -42,7 +43,7 @@ class Window(QMainWindow):
         open_button = QAction('Open file', self)
         open_button.setShortcut('Ctrl+O')
         open_button.setStatusTip('Open file')
-        open_button.triggered.connect(self.close)  # without brackets, else it will execute immediately
+        open_button.triggered.connect(self.open_file_name_dialog)  # without brackets, else it will execute immediately
 
         new_button = QAction('New file', self)
         new_button.setShortcut('Ctrl+N')
@@ -52,7 +53,7 @@ class Window(QMainWindow):
         save_button = QAction('Save file', self)
         save_button.setShortcut('Ctrl+S')
         save_button.setStatusTip('Save file')
-        save_button.triggered.connect(self.close)
+        save_button.triggered.connect(self.save_file_dialog)
 
         file_menu.addAction(exit_button)
         file_menu.addAction(open_button)
@@ -82,3 +83,39 @@ class Window(QMainWindow):
         self.toolBar.addAction(run_action)
         self.toolBar.addAction(settings_action)
         self.toolBar.addAction(info_action)
+
+    def open_file_name_dialog(self):
+        """
+        open 1 file
+        :return:
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_name, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
+                                                   "All Files (*);;Python Files (*.py)", options=options)
+        if file_name:
+            logger.debug(file_name)
+
+    def open_file_names_dialog(self):
+        """
+        open several files
+        :return:
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "",
+                                                "All Files (*);;Python Files (*.py)", options=options)
+        if files:
+            logger.debug(files)
+
+    def save_file_dialog(self):
+        """
+        save 1 file
+        :return:
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_name, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
+                                                   "All Files (*);;Text Files (*.txt)", options=options)
+        if file_name:
+            logger.debug(file_name)
