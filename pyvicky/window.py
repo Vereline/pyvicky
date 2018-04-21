@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog, QTextEdit
 from PyQt5.QtGui import QIcon
 
 import logging
@@ -14,16 +14,23 @@ class Window(QMainWindow):
     Main window class
     """
 
-    def __init__(self, x, y, filename=''):
+    def __init__(self, x, y, filename='unknown'):
         super().__init__()
         self.resize(x, y)
         self.move(300, 300)
+
         self.setWindowTitle('PyVicky: ' + filename)
         self.setWindowIcon(QIcon('pyvicky/staticfiles/pencil.png'))
+
         logger.info('Window created')
         self.toolBar = {}
+
         self.add_menu_bar()
         self.add_tool_bar()
+
+        self.text = QTextEdit(self)
+        self.setCentralWidget(self.text)
+
         self.show()
 
     def add_menu_bar(self):
@@ -59,6 +66,21 @@ class Window(QMainWindow):
         file_menu.addAction(open_button)
         file_menu.addAction(new_button)
         file_menu.addAction(save_button)
+
+        copy_text = QAction('Copy', self)
+        paste_text = QAction('Paste', self)
+
+        copy_text.setShortcut('Ctrl+C')
+        copy_text.triggered.connect(self.copy_func)
+
+        paste_text.setShortcut('Ctrl+V')
+        paste_text.triggered.connect(self.paste_func)
+
+        edit_menu.addAction(copy_text)
+        edit_menu.addAction(paste_text)
+
+        self.setMenuWidget(main_menu)
+        self.setMenuBar(main_menu)
 
     @staticmethod
     def close_application():
@@ -119,3 +141,13 @@ class Window(QMainWindow):
                                                    "All Files (*);;Text Files (*.txt)", options=options)
         if file_name:
             logger.debug(file_name)
+
+    def copy_func(self):
+        self.text.copy()
+
+    def paste_func(self):
+        self.text.paste()
+
+
+class DirectoriesTreeView:
+    pass
