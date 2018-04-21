@@ -10,8 +10,9 @@ class Logger:
 
         if not os.path.exists(file_path):
             dir_path = os.path.split(file_path)[0]
-            if not os.path.exists(dir_path):
-                os.makedirs(dir_path)
+            if dir_path:
+                if not os.path.exists(dir_path):
+                    os.makedirs(dir_path)
             f = open(file_path, 'w')
             f.close()
 
@@ -32,3 +33,5 @@ class Logger:
         if silent:
             self.logger.setLevel(logging.ERROR)  # shows only error
             # self.logger.setLevel(logging.DEBUG)  # shows info and debug and error
+
+        logging.info('Logger initialised')
