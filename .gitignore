@@ -5,4 +5,4 @@ venv
 # file extensions
 *.pyc
 # console log
-*/console.log
+console.log
