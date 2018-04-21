@@ -10,6 +10,9 @@ logger = logging.getLogger('window logger')
 
 
 class Window(QMainWindow):
+    """
+    Main window class
+    """
     def __init__(self, x, y, filename=''):
         super().__init__()
         self.resize(x, y)
@@ -17,7 +20,9 @@ class Window(QMainWindow):
         self.setWindowTitle('PyVicky: ' + filename)
         self.setWindowIcon(QIcon('pyvicky/staticfiles/pencil.png'))
         logger.info('Window created')
+        self.toolBar = {}
         self.add_menu_bar()
+        self.add_tool_bar()
         self.show()
 
     def add_menu_bar(self):
@@ -32,12 +37,12 @@ class Window(QMainWindow):
         exit_button = QAction('Exit', self)
         exit_button.setShortcut('Ctrl+Q')
         exit_button.setStatusTip('Exit application')
-        exit_button.triggered.connect(self.close)
+        exit_button.triggered.connect(self.close_application)  # replace self.close to normal method(which is need)
 
         open_button = QAction('Open file', self)
         open_button.setShortcut('Ctrl+O')
         open_button.setStatusTip('Open file')
-        open_button.triggered.connect(self.close)
+        open_button.triggered.connect(self.close)  # without brackets, else it will execute immediately
 
         new_button = QAction('New file', self)
         new_button.setShortcut('Ctrl+N')
@@ -54,5 +59,26 @@ class Window(QMainWindow):
         file_menu.addAction(new_button)
         file_menu.addAction(save_button)
 
+    @staticmethod
+    def close_application():
+        logger.info('Closing window')
+        sys.exit()
+
     def add_tool_bar(self):
-        pass
+        trash_action = QAction(QIcon('pyvicky/staticfiles/trash.png'), 'Remove item', self)
+        trash_action.triggered.connect(self.close_application)
+
+        run_action = QAction(QIcon('pyvicky/staticfiles/next.png'), 'Run interpreter', self)
+        run_action.triggered.connect(self.close_application)
+
+        settings_action = QAction(QIcon('pyvicky/staticfiles/settings.png'), 'Interpreter settings', self)
+        settings_action.triggered.connect(self.close_application)
+
+        info_action = QAction(QIcon('pyvicky/staticfiles/information.png'), 'Information', self)
+        info_action.triggered.connect(self.close_application)
+
+        self.toolBar = self.addToolBar("Extraction")
+        self.toolBar.addAction(trash_action)
+        self.toolBar.addAction(run_action)
+        self.toolBar.addAction(settings_action)
+        self.toolBar.addAction(info_action)

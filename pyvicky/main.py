@@ -12,7 +12,6 @@ def main():
     logger = Logger('console.log', silent=False)
     app = QApplication(sys.argv)
     window = Window(250, 150, 'file')
-    logging.info('Closing window')
     sys.exit(app.exec_())
 
 

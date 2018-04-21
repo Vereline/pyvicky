@@ -4,3 +4,5 @@ venv
 .idea
 # file extensions
 *.pyc
+# console log
+*/console.log
