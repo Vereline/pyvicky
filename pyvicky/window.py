@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputD
 from PyQt5.QtGui import QIcon, QFont, QSyntaxHighlighter, QTextCharFormat
 from pyvicky.highlighter import PythonHighlighter
 from pyvicky.preferences import PreferencesDlg
+from pyvicky.numberbar import QCodeEditor
 
 import traceback
 import logging
@@ -39,7 +40,8 @@ class Window(QMainWindow):
         self.add_menu_bar()
         self.add_tool_bar()
 
-        self.text = QTextEdit(self)
+        # self.text = QTextEdit(self)
+        self.text = QCodeEditor(self)
         self.setCentralWidget(self.text)
 
         self.font = QFont()
@@ -108,6 +110,12 @@ class Window(QMainWindow):
 
         view_menu.addAction(edit_highlight)
 
+        help_edit = QAction('Help', self)
+        help_edit.setShortcut('Ctrl+H')
+        help_edit.triggered.connect(self.change_preferences)
+
+        help_menu.addAction(help_edit)
+
         self.setMenuWidget(main_menu)
         self.setMenuBar(main_menu)
 
@@ -134,7 +142,7 @@ class Window(QMainWindow):
 
         # TODO: implement info in file and open in dialog window
         info_action = QAction(QIcon('pyvicky/staticfiles/information.png'), 'Information', self)
-        info_action.triggered.connect(self.close_application)
+        info_action.triggered.connect(self.about)
 
         self.toolBar = self.addToolBar("Extraction")
         self.toolBar.addAction(new_action)
@@ -182,7 +190,7 @@ class Window(QMainWindow):
             if filename:
                 self.text.setText(open(filename).read())
                 logger.info('File opened')
-
+                self.set_title(filename)
         except IOError as io_e:
             logger.error(io_e)
             sys.exit(1)
@@ -228,6 +236,7 @@ class Window(QMainWindow):
             with open(file_name, "w") as CurrentFile:
                 CurrentFile.write(self.text.toPlainText())
             CurrentFile.close()
+            self.set_title(file_name)
             logger.info('File saved')
 
         except IOError as io_e:
@@ -245,6 +254,7 @@ class Window(QMainWindow):
         self.text.paste()
 
     def track_unsaved_file(self):
+        # TODO BUG:ask to save even if file is saved(when new file is created and saved)??
         destroy = self.text.document().isModified()
         # print(destroy)
 
@@ -333,11 +343,28 @@ class Window(QMainWindow):
     def update_ui(self):
         # Reload the config
         self.load_config()
+
+        if self.settings.getboolean('Editor', 'ShowLineNumbers', fallback=False):
+            self.numberBar.show()
+        else:
+            self.numberBar.hide()
+
         self.setup_editor()
         self.text.update()
         self.update()
         logging.info("Updated preferences")
 
+    def about(self):
+        QMessageBox.about(self, "About Syntax Highlighter",
+                          "<p>The <b>Syntax Highlighter</b> example shows how to " 
+                          "perform simple syntax highlighting by subclassing the " 
+                          "QSyntaxHighlighter class and describing highlighting " 
+                          "rules using regular expressions.</p>")
+
 
 class DirectoriesTreeView:
+    pass
+
+
+class TabView:
     pass
