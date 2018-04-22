@@ -188,7 +188,7 @@ class Window(QMainWindow):
                 filename = self.open_file_name_dialog()
 
             if filename:
-                self.text.setText(open(filename).read())
+                self.text.setPlainText(open(filename).read())
                 logger.info('File opened')
                 self.set_title(filename)
         except IOError as io_e:
@@ -203,7 +203,7 @@ class Window(QMainWindow):
         # TODO: not implemented, implement, when tabs will be created
         filename, _ = QFileDialog.getOpenFileName(self, "Open File", '', "All Files (*)")
         try:
-            self.text.setText(open(filename).read())
+            self.text.setPlainText(open(filename).read())
 
         except IOError as io_e:
             logger.error(io_e)
@@ -335,7 +335,7 @@ class Window(QMainWindow):
 
             with open(self.currentFilePath, 'r') as f:
                 self.text.clear()
-                self.text.setText(f.read())
+                self.text.setPlainText(f.read())
 
             logging.error(e)
             traceback.print_exc()

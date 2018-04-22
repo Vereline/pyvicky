@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PyQt5.QtGui import QColor, QPainter, QTextFormat
 
+import logging
+
 
 class QLineNumberArea(QWidget):
     def __init__(self, editor):
@@ -25,6 +27,7 @@ class QCodeEditor(QPlainTextEdit):
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
+        logging.info('Create editor with number bar')
 
     def lineNumberAreaWidth(self):
         digits = 1
