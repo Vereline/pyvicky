@@ -46,7 +46,7 @@ class Window(QMainWindow):
         exit_button = QAction('Exit', self)
         exit_button.setShortcut('Ctrl+Q')
         exit_button.setStatusTip('Exit application')
-        exit_button.triggered.connect(self.close_application)  # replace self.close to normal method(which is need)
+        exit_button.triggered.connect(self.close)  # replace self.close to normal method(which is need)
 
         open_button = QAction('Open file', self)
         open_button.setShortcut('Ctrl+O')
@@ -133,7 +133,6 @@ class Window(QMainWindow):
         if files:
             logger.debug(files)
             logger.info('Files opened')
-
 
     def open_file(self, filename):
         try:
@@ -228,6 +227,10 @@ class Window(QMainWindow):
         if not self.track_unsaved_file():
             self.text.clear()
             logger.info('File created')
+
+    def set_title(self, file_path):
+        file_path = file_path.split('/')[-1]
+        self.setWindowTitle('PyVicky: ' + file_path)
 
 
 class DirectoriesTreeView:

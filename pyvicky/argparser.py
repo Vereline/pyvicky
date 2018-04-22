@@ -3,16 +3,15 @@
 import argparse
 import os
 import logging
+import sys
 
 
 class Argparser:
-    def __init__(self, arguments_string=''):
+    def __init__(self):
         self.parser = self.add_parser()
-        if arguments_string:
-            splitted_arguments_string = arguments_string.split(' ')
-            self.args = self.parser.parse_args(splitted_arguments_string)
-        else:
-            self.args = self.parser.parse_args()
+        logging.info('Parser created')
+        self.defined_command_line = sys.argv[1:]
+        self.out_list = self.create_out_list(self.defined_command_line)
 
     @staticmethod
     def add_parser():
@@ -27,3 +26,18 @@ class Argparser:
         parser.add_argument('--configs', dest='configs', nargs='*', help='configurations for 1 run')
 
         return parser
+
+    @staticmethod
+    def define_path(filename):
+        if os.path.exists(filename):
+            return os.path.abspath(os.path.expanduser(filename))  # filename
+        if filename.find('/') == -1:
+            path = os.path.abspath(filename)
+            # path = os.path.abspath(os.getcwd()+'/()'.format(filename))
+        else:
+            path = os.path.abspath(os.path.expanduser(filename))
+        return path
+
+    def create_out_list(self, args):
+        out_list = list(map(self.define_path, args))
+        return out_list
