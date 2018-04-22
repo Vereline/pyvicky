@@ -3,7 +3,7 @@ import configparser
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog, \
-    QTextEdit, QMessageBox
+    QTextEdit, QMessageBox, QVBoxLayout, QTabWidget
 from PyQt5.QtGui import QIcon, QFont, QSyntaxHighlighter, QTextCharFormat
 from pyvicky.highlighter import PythonHighlighter
 from pyvicky.preferences import PreferencesDlg
@@ -41,8 +41,11 @@ class Window(QMainWindow):
         self.add_tool_bar()
 
         # self.text = QTextEdit(self)
-        self.text = QCodeEditor(self)
-        self.setCentralWidget(self.text)
+        # self.text = QCodeEditor(self)
+        # self.setCentralWidget(self.text)
+        self.tabWidget = TabView(self)
+        self.setCentralWidget(self.tabWidget)
+        self.tabWidget.add_tab(self, "new")
 
         self.font = QFont()
         self.settings = configparser.ConfigParser()
@@ -140,7 +143,6 @@ class Window(QMainWindow):
         settings_action = QAction(QIcon('pyvicky/staticfiles/settings.png'), 'Interpreter settings', self)
         settings_action.triggered.connect(self.close_application)
 
-        # TODO: implement info in file and open in dialog window
         info_action = QAction(QIcon('pyvicky/staticfiles/information.png'), 'Information', self)
         info_action.triggered.connect(self.about)
 
@@ -188,7 +190,9 @@ class Window(QMainWindow):
                 filename = self.open_file_name_dialog()
 
             if filename:
-                self.text.setPlainText(open(filename).read())
+                self.tabWidget.add_tab(self, filename, open(filename).read())
+                # self.text.setPlainText(open(filename).read())
+                self.update_ui()
                 logger.info('File opened')
                 self.set_title(filename)
         except IOError as io_e:
@@ -203,7 +207,8 @@ class Window(QMainWindow):
         # TODO: not implemented, implement, when tabs will be created
         filename, _ = QFileDialog.getOpenFileName(self, "Open File", '', "All Files (*)")
         try:
-            self.text.setPlainText(open(filename).read())
+            self.tabWidget.add_tab(self, filename, open(filename).read())
+            # self.text.setPlainText(open(filename).read())
 
         except IOError as io_e:
             logger.error(io_e)
@@ -234,7 +239,9 @@ class Window(QMainWindow):
         try:
             file_name = self.save_file_dialog()
             with open(file_name, "w") as CurrentFile:
-                CurrentFile.write(self.text.toPlainText())
+                current = self.tabWidget.get_cur_index()
+                CurrentFile.write(self.get_editor_by_index(current).toPlainText())
+                # CurrentFile.write(self.text.toPlainText())
             CurrentFile.close()
             self.set_title(file_name)
             logger.info('File saved')
@@ -248,14 +255,22 @@ class Window(QMainWindow):
             sys.exit(1)
 
     def copy_func(self):
-        self.text.copy()
+        current = self.tabWidget.get_cur_index()
+        self.get_editor_by_index(current).copy()
 
     def paste_func(self):
-        self.text.paste()
+        current = self.tabWidget.get_cur_index()
+        self.get_editor_by_index(current).paste()
 
-    def track_unsaved_file(self):
-        # TODO BUG:ask to save even if file is saved(when new file is created and saved)??
-        destroy = self.text.document().isModified()
+    def get_editor_by_index(self, current):
+        return self.tabWidget.get_editor_from_tab(current)
+
+    def track_unsaved_file(self, current=None):
+        # TODO BUG: saves only last tab
+        # destroy = self.text.document().isModified()
+        if not current:
+            current = self.tabWidget.get_cur_index()
+        destroy = self.get_editor_by_index(current).document().isModified()
         # print(destroy)
 
         if not destroy:
@@ -275,6 +290,15 @@ class Window(QMainWindow):
 
         return True
 
+    def track_unsaved_files(self):
+        count = self.tabWidget.get_tabs()
+        result = False
+        for i in range(count):
+            if not result:  # in order to define, is there any file, which is modified and not saved
+                result = self.track_unsaved_file(i)
+
+        return result
+
     def closeEvent(self, event):
         """
         not a method, but event from QMainWindow
@@ -282,19 +306,20 @@ class Window(QMainWindow):
         :param event:
         :return:
         """
-        if self.track_unsaved_file():
+        if self.track_unsaved_files():
             event.ignore()
         else:
             self.close_application()
 
     def new_file(self):
-        # TODO: implement tabs instead of clearing
-        if not self.track_unsaved_file():
-            self.clear_text()
-            logger.info('File created')
+        self.tabWidget.add_tab(self, "new")
+        # self.clear_text()
+        self.update_ui()
+        logger.info('File created')
 
     def clear_text(self):
-        self.text.clear()
+        current = self.tabWidget.get_cur_index()
+        self.get_editor_by_index(current).clear()
 
     def set_title(self, file_path):
         file_path = file_path.split('/')[-1]
@@ -311,12 +336,13 @@ class Window(QMainWindow):
         self.font.setWordSpacing(self.settings.getfloat('Editor', 'WordSpacing', fallback=1.0))
         # TODO: set font config with editor (or separated file)
 
-        self.highlighter = PythonHighlighter(self.text.document())
-
-        # set background and main colors
-        self.text.setPalette(self.highlighter.get_palette())
-        self.text.setTabStopWidth(40)
-        self.text.setFont(self.font)
+        count = self.tabWidget.get_tabs()
+        for i in range(count):
+            highlighter = self.tabWidget.set_highlighter(i)
+            text = self.tabWidget.get_editor_from_tab(i)
+            text.setPalette(highlighter.get_palette())
+            text.setTabStopWidth(40)
+            text.setFont(self.font)
 
     def load_config(self):
         self.settings.read('pyvicky/configs/settings.ini')
@@ -334,8 +360,9 @@ class Window(QMainWindow):
             self.firstSave = False
 
             with open(self.currentFilePath, 'r') as f:
-                self.text.clear()
-                self.text.setPlainText(f.read())
+                self.tabWidget.add_tab(self, "INI", f.read())
+                # self.text.clear()
+                # self.text.setPlainText(f.read())
 
             logging.error(e)
             traceback.print_exc()
@@ -344,20 +371,15 @@ class Window(QMainWindow):
         # Reload the config
         self.load_config()
 
-        if self.settings.getboolean('Editor', 'ShowLineNumbers', fallback=False):
-            self.numberBar.show()
-        else:
-            self.numberBar.hide()
-
         self.setup_editor()
-        self.text.update()
+        # self.text.update()
         self.update()
         logging.info("Updated preferences")
 
     def about(self):
-        QMessageBox.about(self, "About Syntax Highlighter",
-                          "<p>The <b>Syntax Highlighter</b> example shows how to " 
-                          "perform simple syntax highlighting by subclassing the " 
+        QMessageBox.about(self, "About Syntax PyVicky",
+                          "<p>The <b>PyVicky Editor</b> is a simple text editor " 
+                          "which perform simple syntax highlighting by subclassing the " 
                           "QSyntaxHighlighter class and describing highlighting " 
                           "rules using regular expressions.</p>")
 
@@ -366,5 +388,62 @@ class DirectoriesTreeView:
     pass
 
 
-class TabView:
-    pass
+class TabView(QWidget):
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
+        self.layout = QVBoxLayout(self)
+
+        # Initialize tab screen
+        self.tabWidget = QTabWidget()
+
+        self.tabWidget.setTabsClosable(True)
+        self.tabWidget.tabCloseRequested.connect(self.close_tab)
+
+        # Add tabs to widget
+        self.layout.addWidget(self.tabWidget)
+        self.setLayout(self.layout)
+
+    def add_tab(self, parent, tab_name, text=''):
+        tab = QWidget()
+        tab.layout = QVBoxLayout(self)
+        text_editor = QCodeEditor(parent)
+        text_editor.setPlainText(text)
+        tab.layout.addWidget(text_editor)
+        tab.setLayout(tab.layout)
+        if '/' in tab_name:
+            tab_name = tab_name.split('/')[-1]
+        self.tabWidget.addTab(tab, tab_name)
+        logging.info('Added tab')
+
+    def close_tab(self, currentIndex):
+        # TODO: control save operation
+        # currentQWidget = self.widget(currentIndex)
+        # currentQWidget.deleteLater()
+        self.tabWidget.removeTab(currentIndex)
+        logging.info('Closed tab')
+
+    def get_cur_index(self):
+        return self.tabWidget.currentIndex()
+
+    def get_cur_text(self):
+        index = self.get_cur_index()
+        text = self.tabWidget.widget(index).text_editor.toPlainText()
+        return text
+
+    def get_editor_from_tab(self, index):
+        tab = self.tabWidget.widget(index)
+        count = tab.layout.count()
+        try:
+            for i in range(count):
+                if type(tab.layout.itemAt(i).widget()) is QCodeEditor:
+                    return tab.layout.itemAt(i).widget()
+        except Exception as e:
+            logging.error(e)
+
+    def set_highlighter(self, index):
+        editor = self.get_editor_from_tab(index)
+        self.tabWidget.widget(index).highlighter = PythonHighlighter(editor.document())
+        return self.tabWidget.widget(index).highlighter
+
+    def get_tabs(self):
+        return self.tabWidget.count()
