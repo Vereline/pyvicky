@@ -25,7 +25,7 @@ def main():
     logger = Logger('console.log', silent=False)
     argparser = Argparser()
     app = QApplication(sys.argv)
-    window = Window(450, 350, '')
+    window = Window(900, 800, '')
     process_args(argparser.out_list, window)
     sys.exit(app.exec_())
 

@@ -2,8 +2,9 @@
 import configparser
 import sys
 import os
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QAction, QMainWindow, QInputDialog, QLineEdit, QFileDialog, \
-    QTextEdit, QMessageBox, QVBoxLayout, QTabWidget
+    QTextEdit, QMessageBox, QVBoxLayout, QTabWidget, QFileSystemModel, QTreeView, QDockWidget
 from PyQt5.QtGui import QIcon, QFont, QSyntaxHighlighter, QTextCharFormat
 from pyvicky.highlighter import PythonHighlighter
 from pyvicky.preferences import PreferencesDlg
@@ -40,11 +41,20 @@ class Window(QMainWindow):
         self.add_menu_bar()
         self.add_tool_bar()
 
+        self.docked_items = QDockWidget("Tree", self)
+        self.treeWidget = DirectoriesTreeView(self)
+        self.treeWidget.tree.clicked.connect(self.open_file_from_tree)
+        self.docked_items.setWidget(self.treeWidget)
+        self.docked_items.setFloating(False)
         # self.text = QTextEdit(self)
         # self.text = QCodeEditor(self)
         # self.setCentralWidget(self.text)
         self.tabWidget = TabView(self)
         self.setCentralWidget(self.tabWidget)
+        self.tabWidget.tabWidget.tabCloseRequested.connect(self.close_tab)
+
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.docked_items)
+
         self.tabWidget.add_tab(self, "new")
 
         self.font = QFont()
@@ -84,10 +94,16 @@ class Window(QMainWindow):
         save_button.setStatusTip('Save file')
         save_button.triggered.connect(self.save_file)
 
+        open_dir_button = QAction('Open directory', self)
+        open_dir_button.setShortcut('Ctrl+Shift+O')
+        open_dir_button.setStatusTip('Open directory')
+        open_dir_button.triggered.connect(self.open_directory)
+
         file_menu.addAction(exit_button)
         file_menu.addAction(open_button)
         file_menu.addAction(new_button)
         file_menu.addAction(save_button)
+        file_menu.addAction(open_dir_button)
 
         copy_text = QAction('Copy', self)
         paste_text = QAction('Paste', self)
@@ -129,12 +145,10 @@ class Window(QMainWindow):
 
     def add_tool_bar(self):
 
-        # TODO: create new tab
         new_action = QAction(QIcon('pyvicky/staticfiles/plus.png'), 'New item', self)
         new_action.triggered.connect(self.new_file)
 
-        # TODO: clean this file and delete, if exists ???
-        trash_action = QAction(QIcon('pyvicky/staticfiles/trash.png'), 'Remove item', self)
+        trash_action = QAction(QIcon('pyvicky/staticfiles/trash.png'), 'Clean item', self)
         trash_action.triggered.connect(self.clear_text)
 
         run_action = QAction(QIcon('pyvicky/staticfiles/next.png'), 'Run interpreter', self)
@@ -183,6 +197,27 @@ class Window(QMainWindow):
             logger.debug(files)
             logger.info('Files opened')
             return files
+
+    def open_dir_dialog(self):
+        """
+        open directory
+        :return:
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        dirs = QFileDialog.getExistingDirectory(self, 'Select directory')
+
+        if dirs:
+            logger.debug(dirs)
+            logger.info('Dir opened')
+            return dirs
+
+    def open_directory(self):
+        path = self.open_dir_dialog()
+        if path:
+            # print(path)
+            self.treeWidget.initUI(path)
+            return path
 
     def open_file(self, filename=None):
         try:
@@ -267,7 +302,6 @@ class Window(QMainWindow):
         return self.tabWidget.get_editor_from_tab(current)
 
     def track_unsaved_file(self, current=None):
-        # TODO BUG: saves only last tab
         # destroy = self.text.document().isModified()
         if current is None:
             current = self.tabWidget.get_cur_index()
@@ -384,9 +418,65 @@ class Window(QMainWindow):
                           "QSyntaxHighlighter class and describing highlighting " 
                           "rules using regular expressions.</p>")
 
+    def close_tab(self, current_index):
+        if self.track_unsaved_file(current_index):
+            pass
+        else:
+            self.tabWidget.close_tab(current_index)
 
-class DirectoriesTreeView:
-    pass
+    def open_file_from_tree(self, index):
+        # TODO: iterate if file is already opned, or not??=)
+        path = self.treeWidget.tree_function(index)
+        self.open_file(path)
+
+
+class DirectoriesTreeView(QWidget):
+
+    def __init__(self, parent, _dir=None):
+        super(QWidget, self).__init__(parent)
+        # self.left = 10
+        # self.top = 10
+        # self.width = 200
+        # self.height = 300
+        self.tree = QTreeView()
+        windowLayout = QVBoxLayout()
+        windowLayout.addWidget(self.tree)
+        self.setLayout(windowLayout)
+        logging.info('create tree widget')
+        self.initUI(_dir)
+
+    def initUI(self, _dir=None):
+        # self.setGeometry(self.left, self.top, self.width, self.height)
+
+        if _dir:
+            self.model = QFileSystemModel()
+            # self.model.setRootPath('')
+            self.model.setRootPath(_dir)
+            # print(self.model.rootPath())
+            # print(self.model.rootDirectory())
+            index = self.model.index(self.model.rootPath())
+
+            self.tree.setModel(self.model)
+            self.tree.setRootIndex(index)
+
+            self.tree.setAnimated(False)
+            self.tree.setIndentation(20)
+            self.tree.setSortingEnabled(True)
+
+            # self.tree.resize(640, 480)
+            self.tree.hideColumn(3)  # disable file type, file size etc
+            self.tree.hideColumn(2)
+            self.tree.hideColumn(1)
+            # self.tree.clicked.connect(self.tree_function)
+            logging.info('update tree')
+
+        self.show()
+
+    def tree_function(self, index):
+        # print(item)
+        path = self.sender().model().filePath(index)
+        logging.info('Tree path is ' + path)
+        return path
 
 
 class TabView(QWidget):
@@ -398,7 +488,7 @@ class TabView(QWidget):
         self.tabWidget = QTabWidget()
 
         self.tabWidget.setTabsClosable(True)
-        self.tabWidget.tabCloseRequested.connect(self.close_tab)
+        # self.tabWidget.tabCloseRequested.connect(self.close_tab)
 
         # Add tabs to widget
         self.layout.addWidget(self.tabWidget)
