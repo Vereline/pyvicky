@@ -235,11 +235,12 @@ class Window(QMainWindow):
 
         return None
 
-    def save_file(self):
+    def save_file(self, current=None):
         try:
             file_name = self.save_file_dialog()
             with open(file_name, "w") as CurrentFile:
-                current = self.tabWidget.get_cur_index()
+                if current is None:
+                    current = self.tabWidget.get_cur_index()
                 CurrentFile.write(self.get_editor_by_index(current).toPlainText())
                 # CurrentFile.write(self.text.toPlainText())
             CurrentFile.close()
@@ -268,7 +269,7 @@ class Window(QMainWindow):
     def track_unsaved_file(self, current=None):
         # TODO BUG: saves only last tab
         # destroy = self.text.document().isModified()
-        if not current:
+        if current is None:
             current = self.tabWidget.get_cur_index()
         destroy = self.get_editor_by_index(current).document().isModified()
         # print(destroy)
@@ -286,7 +287,7 @@ class Window(QMainWindow):
             elif detour == QMessageBox.No:
                 return False
             elif detour == QMessageBox.Yes:
-                return self.save_file()
+                return self.save_file(current)
 
         return True
 
