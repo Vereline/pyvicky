@@ -10,6 +10,7 @@ from pyvicky.highlighter import PythonHighlighter
 from pyvicky.preferences import PreferencesDlg
 from pyvicky.numberbar import QCodeEditor
 from pyvicky.find import Find
+from pyvicky.interpreter_dialog import InterpreterDlg
 
 import traceback
 import logging
@@ -146,7 +147,7 @@ class Window(QMainWindow):
 
         interp_edit = QAction('Interpreter Settings', self)
         interp_edit.setShortcut('Ctrl+I')
-        interp_edit.triggered.connect(self.close_application)
+        interp_edit.triggered.connect(self.interp_settings)
 
         interp_run = QAction('Run Interpreter', self)
         interp_run.setShortcut('F11')
@@ -175,7 +176,7 @@ class Window(QMainWindow):
         run_action.triggered.connect(self.close_application)
 
         settings_action = QAction(QIcon('pyvicky/staticfiles/settings.png'), 'Interpreter settings', self)
-        settings_action.triggered.connect(self.close_application)
+        settings_action.triggered.connect(self.interp_settings)
 
         info_action = QAction(QIcon('pyvicky/staticfiles/information.png'), 'Information', self)
         info_action.triggered.connect(self.about)
@@ -425,6 +426,13 @@ class Window(QMainWindow):
 
             logging.error(e)
             traceback.print_exc()
+
+    def interp_settings(self):
+        # Create the Interpreter dialog
+        try:
+            dlg = InterpreterDlg(self)
+        except Exception as e:
+            logging.error(e)
 
     def update_ui(self):
         # Reload the config
