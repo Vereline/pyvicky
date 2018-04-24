@@ -144,6 +144,17 @@ class Window(QMainWindow):
 
         search_menu.addAction(search_edit)
 
+        interp_edit = QAction('Interpreter Settings', self)
+        interp_edit.setShortcut('Ctrl+I')
+        interp_edit.triggered.connect(self.close_application)
+
+        interp_run = QAction('Run Interpreter', self)
+        interp_run.setShortcut('F11')
+        interp_run.triggered.connect(self.close_application)
+
+        tools_menu.addAction(interp_edit)
+        tools_menu.addAction(interp_run)
+
         self.setMenuWidget(main_menu)
         self.setMenuBar(main_menu)
 
@@ -233,7 +244,7 @@ class Window(QMainWindow):
             if not filename:
                 filename = self.open_file_name_dialog()
 
-            if filename:
+            if filename and os.path.isfile(filename):
                 self.tabWidget.add_tab(self, filename, open(filename).read())
                 # self.text.setPlainText(open(filename).read())
                 self.update_ui()

@@ -12,26 +12,15 @@ class InterpreterDlg(QDialog):
         super(InterpreterDlg, self).__init__(parent)
         self.config = None
         self.settings = None
-        self.theme = ''
 
         self.load_config()
 
         self.setWindowTitle('InterpreterDlg')
-
         self.show()
 
     def load_config(self):
         self.settings = configparser.ConfigParser()
         self.settings.read('pyvicky/configs/interpreter_settings.ini')
-        # try:
-        #     self.theme = 'pyvicky/configs/themes/' + self.themeBox.currentText() + '.ini'
-        # except Exception as e:
-        #     logging.error(e)
-        #     self.theme = ''
-        # if self.theme == '':
-        #     self.theme = self.settings.get('Editor', 'theme', fallback='pyvicky/configs/themes/default.ini')
-
-        self.config = configparser.ConfigParser()
         try:
             self.config.read(self.theme)
             self.settings['Editor']['theme'] = self.theme
@@ -41,4 +30,7 @@ class InterpreterDlg(QDialog):
             self.settings['Editor']['theme'] = self.theme
 
     def change_config(self):
+        pass
+
+    def search_available_interpreter(self):
         pass
