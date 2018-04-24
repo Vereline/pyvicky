@@ -1,0 +1,18 @@
+Write here intro + how to use + features + hotkeys(copy readme.md)
+
+
+Shortcuts
+   Ctrl+C - copy
+   Ctrl+V - paste
+   Ctrl+O - open file
+   Ctrl+Shift+O - open directory
+   Ctrl+A - select all text
+   Ctrl+Y - clear tab
+   Ctrl+F - search dialog
+   Ctrl+Q - quit
+   Ctrl+P - preferences dialog
+   Ctrl+S - save file
+   Ctrl+N - new Tab
+   Ctrl+H - local help
+   Ctrl+E - trigger autocomplete (if written less than 2 symbols)
+   Tab - tab(size equals 4 spaces(default))

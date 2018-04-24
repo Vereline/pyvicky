@@ -7,7 +7,6 @@ from PyQt5.QtGui import QColor, QPainter, QTextFormat, QTextCursor
 import logging
 import configparser
 import os
-import sys
 
 
 class QLineNumberArea(QWidget):

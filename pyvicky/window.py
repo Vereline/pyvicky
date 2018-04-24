@@ -9,6 +9,7 @@ from PyQt5.QtGui import QIcon, QFont, QSyntaxHighlighter, QTextCharFormat
 from pyvicky.highlighter import PythonHighlighter
 from pyvicky.preferences import PreferencesDlg
 from pyvicky.numberbar import QCodeEditor
+from pyvicky.find import Find
 
 import traceback
 import logging
@@ -37,6 +38,7 @@ class Window(QMainWindow):
         self.currentFileName = 'Untitled'
         self.currentFilePath = os.getcwd()
         self.firstSave = True
+        self.findDlg = None
 
         self.add_menu_bar()
         self.add_tool_bar()
@@ -134,6 +136,12 @@ class Window(QMainWindow):
         help_edit.triggered.connect(self.change_preferences)
 
         help_menu.addAction(help_edit)
+
+        search_edit = QAction('Search', self)
+        search_edit.setShortcut('Ctrl+F')
+        search_edit.triggered.connect(self.search_config)
+
+        search_menu.addAction(search_edit)
 
         self.setMenuWidget(main_menu)
         self.setMenuBar(main_menu)
@@ -382,6 +390,10 @@ class Window(QMainWindow):
     def load_config(self):
         self.settings.read('pyvicky/configs/settings.ini')
         self.config.read(self.settings['Editor']['theme'])
+
+    def search_config(self):
+        find = Find(self)
+        find.show()
 
     def change_preferences(self):
         try:
