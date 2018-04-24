@@ -133,9 +133,10 @@ class Window(QMainWindow):
 
         help_edit = QAction('Help', self)
         help_edit.setShortcut('Ctrl+H')
-        help_edit.triggered.connect(self.change_preferences)
+        help_edit.triggered.connect(self.about)
 
         help_menu.addAction(help_edit)
+        help_menu.addAction("About Qt", QApplication.instance().aboutQt)
 
         search_edit = QAction('Search', self)
         search_edit.setShortcut('Ctrl+F')
@@ -446,10 +447,6 @@ class DirectoriesTreeView(QWidget):
 
     def __init__(self, parent, _dir=None):
         super(QWidget, self).__init__(parent)
-        # self.left = 10
-        # self.top = 10
-        # self.width = 200
-        # self.height = 300
         self.tree = QTreeView()
         windowLayout = QVBoxLayout()
         windowLayout.addWidget(self.tree)
@@ -458,7 +455,6 @@ class DirectoriesTreeView(QWidget):
         self.initUI(_dir)
 
     def initUI(self, _dir=None):
-        # self.setGeometry(self.left, self.top, self.width, self.height)
 
         if _dir:
             self.model = QFileSystemModel()
