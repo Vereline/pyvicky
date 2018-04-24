@@ -87,6 +87,16 @@ class PreferencesDlg(QDialog):
                 themes.append(file[:-4])
         return themes
 
+    @staticmethod
+    def get_paths():
+        """Parse through the theme dir and get the themes names as strings.
+        Returns a list (of theme names)."""
+        themes = []
+        for file in os.listdir('pyvicky/keywords/'):
+            if file.endswith('.txt'):
+                themes.append('pyvicky/keywords/' + file)
+        return themes
+
     def set_color_values(self):
         # Get the theme
         self.load_config()
@@ -288,10 +298,19 @@ class PreferencesDlg(QDialog):
                                                                 'highlighter']))
         # Set the current item to the the current theme (without the path and .ini part)
 
+        self.dictBox = QComboBox()
+        dict_paths = self.get_paths()
+
+        self.dictBox.addItems(dict_paths)
+        self.dictBox.setCurrentIndex(dict_paths.index(self.settings['Dictionary']['path']))
+
         # Extensions Layout
         self.extensionsLayout = QGridLayout()
         self.extensionsLayout.addWidget(QLabel('Highlighter Class:'))
         self.extensionsLayout.addWidget(self.highlighter)
+
+        self.extensionsLayout.addWidget(QLabel('Dictionary:'))
+        self.extensionsLayout.addWidget(self.dictBox)
 
         # Extensions Group
         self.extensionsGroupBox = QGroupBox('Extensions')
@@ -358,6 +377,10 @@ class PreferencesDlg(QDialog):
         highlighters = self.get_highlighters()
         self.highlighter.setCurrentIndex(highlighters.index(self.settings['Extensions'][
                                                                 'highlighter']))
+
+        dicts = self.get_paths()
+        self.dictBox.setCurrentIndex(dicts.index(self.settings['Dictionary'][
+                                                                'path']))
         # Set the current item to the the current theme (without the path and .ini part)
 
     def get_values(self):
@@ -391,6 +414,7 @@ class PreferencesDlg(QDialog):
         self.config.set('Colors', 'HighlightedText', self.highlightedTextInput.text())
 
         self.settings.set('Extensions', 'Highlighter', self.highlighter.currentText())
+        self.settings.set('Dictionary', 'path', self.dictBox.currentText())
 
     def make_color_dlg(self, line_edit, color_label):
         color_dlg = QColorDialog(self)
