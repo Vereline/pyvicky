@@ -435,11 +435,12 @@ class Window(QMainWindow):
         except Exception as e:
             logging.error(e)
 
-    def run_interp(self):
+    @staticmethod
+    def run_interp():
         settings = configparser.ConfigParser()
         settings.read('pyvicky/configs/interpreter_settings.ini')
         print(settings.sections())
-        settings_arr = settings.sections()[0]
+        # settings_arr = settings.sections()[0]
         # settings_arr = settings.options(settings_arr)
         run_script = ' '.join([settings['Interpreter']['path'],
                                settings['Interpreter']['file'],
@@ -447,8 +448,6 @@ class Window(QMainWindow):
         logging.debug("SETTINGS: " + run_script)
         try:
             process = subprocess.Popen('echo "Start executing program..."', stdout=subprocess.PIPE, shell=True)
-            username = process.communicate()[0]
-            # print(username)  # prints the username of the account you're logged in as
             start = time.time()
             process = subprocess.call(run_script, shell=True)
             end = time.time()

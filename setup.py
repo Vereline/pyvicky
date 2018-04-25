@@ -26,5 +26,11 @@ setup(
     author='Viktoryia Stanko',
     author_email='vstanko1998@inbox.ru',
     packages=find_packages(),
-    install_requires=requirements
+    install_requires=requirements,
+
+    entry_points={
+        'console_scripts': [
+            'pyvicky = pyvicky.main:main'
+        ]
+    }
 )
