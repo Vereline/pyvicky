@@ -13,8 +13,10 @@ from pyvicky.find import Find
 from pyvicky.interpreter_dialog import InterpreterDlg
 
 import traceback
+import subprocess
 import logging
 import re
+import time
 
 logger = logging.getLogger('window logger')
 ini_pattern = re.compile('(.)*\.ini')
@@ -151,7 +153,7 @@ class Window(QMainWindow):
 
         interp_run = QAction('Run Interpreter', self)
         interp_run.setShortcut('F11')
-        interp_run.triggered.connect(self.close_application)
+        interp_run.triggered.connect(self.run_interp)
 
         tools_menu.addAction(interp_edit)
         tools_menu.addAction(interp_run)
@@ -173,7 +175,7 @@ class Window(QMainWindow):
         trash_action.triggered.connect(self.clear_text)
 
         run_action = QAction(QIcon('pyvicky/staticfiles/next.png'), 'Run interpreter', self)
-        run_action.triggered.connect(self.close_application)
+        run_action.triggered.connect(self.run_interp)
 
         settings_action = QAction(QIcon('pyvicky/staticfiles/settings.png'), 'Interpreter settings', self)
         settings_action.triggered.connect(self.interp_settings)
@@ -295,7 +297,7 @@ class Window(QMainWindow):
         try:
             file_name = self.save_file_dialog()
             with open(file_name, "w") as CurrentFile:
-                if current is None:
+                if not current:
                     current = self.tabWidget.get_cur_index()
                 CurrentFile.write(self.get_editor_by_index(current).toPlainText())
                 # CurrentFile.write(self.text.toPlainText())
@@ -431,6 +433,29 @@ class Window(QMainWindow):
         # Create the Interpreter dialog
         try:
             dlg = InterpreterDlg(self)
+        except Exception as e:
+            logging.error(e)
+
+    def run_interp(self):
+        settings = configparser.ConfigParser()
+        settings.read('pyvicky/configs/interpreter_settings.ini')
+        print(settings.sections())
+        settings_arr = settings.sections()[0]
+        # settings_arr = settings.options(settings_arr)
+        run_script = ' '.join([settings['Interpreter']['path'],
+                               settings['Interpreter']['file'],
+                               settings['Interpreter']['keys']])
+        logging.debug("SETTINGS: " + run_script)
+        try:
+            process = subprocess.Popen('echo "Start executing program..."', stdout=subprocess.PIPE, shell=True)
+            username = process.communicate()[0]
+            # print(username)  # prints the username of the account you're logged in as
+            start = time.time()
+            process = subprocess.call(run_script, shell=True)
+            end = time.time()
+            elapsed_time = end - start
+            logging.info('Task is done in ' + str(elapsed_time))
+            print('Task is successfully done in {time} sec'.format(time=str(elapsed_time)))
         except Exception as e:
             logging.error(e)
 
