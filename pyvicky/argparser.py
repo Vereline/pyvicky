@@ -11,7 +11,12 @@ class Argparser:
         self.parser = self.add_parser()
         logging.info('Parser created')
         self.defined_command_line = sys.argv[1:]
-        self.out_list = self.create_out_list(self.defined_command_line)
+        if self.defined_command_line != '' or self.defined_command_line != []:
+            # splited_arguments_string = self.defined_command_line.split(' ')
+            self.args = self.parser.parse_args(self.defined_command_line)
+        else:
+            self.args = self.parser.parse_args()
+        self.out_list = self.create_out_list(self.args.path)
 
     @staticmethod
     def add_parser():

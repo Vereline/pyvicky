@@ -60,7 +60,7 @@ class Window(QMainWindow):
 
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docked_items)
 
-        self.tabWidget.add_tab(self, "new")
+        # self.tabWidget.add_tab(self, "new")
 
         self.font = QFont()
         self.settings = configparser.ConfigParser()
@@ -329,7 +329,6 @@ class Window(QMainWindow):
         if current is None:
             current = self.tabWidget.get_cur_index()
         destroy = self.get_editor_by_index(current).document().isModified()
-        # print(destroy)
 
         if not destroy:
             return False

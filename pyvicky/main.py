@@ -22,8 +22,12 @@ def process_args(args, window):
 
 def main():
     # TODO: now only possible with 1 file
-    logger = Logger('console.log', silent=False)
     argparser = Argparser()
+    if argparser.args.silent:
+        silent = True
+    else:
+        silent = False
+    logger = Logger('console.log', silent=silent)
     app = QApplication(sys.argv)
     window = Window(900, 800, '')
     process_args(argparser.out_list, window)
