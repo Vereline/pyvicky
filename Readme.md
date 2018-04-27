@@ -2,12 +2,19 @@
 
 PyVicky is a visual development environment for Python written in PyQt.
 Here you can:
-* write your python code, using highlight and autocomplete
-* edit as many files as you can at the moment
-* configure and open not only files, but whole projects
-* interpret your code
-* find and replace text by regex in your code
-* configure view, font, highlight and themes of **PyVicky** editor
+
++ write your python code, using highlight and autocomplete
+
++ edit as many files as you can at the moment
+
++ configure and open not only files, but whole projects
+
++ interpret your code
+
++ find and replace text by regex in your code
+
++ configure view, font, highlight and themes of **PyVicky** editor
+
 
 ## Installation
 
