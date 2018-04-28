@@ -26,7 +26,7 @@ Here you can:
 ###  Installation process
 1. download official package from this repository
 2. unpack it
-3. `$ pip install -r requirements.txt`
+3. `$ pip install -r requirements-freeze.txt`
 4. `$ python setup.py install`
 
 ## Usage
