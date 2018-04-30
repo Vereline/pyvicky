@@ -26,7 +26,7 @@ class Window(QMainWindow):
     """
     Main window class
     """
-
+# TODO: implement text zooming
     def __init__(self, x, y, filename='unknown'):
         super().__init__()
         self.resize(x, y)
@@ -183,12 +183,17 @@ class Window(QMainWindow):
         info_action = QAction(QIcon('pyvicky/staticfiles/information.png'), 'Information', self)
         info_action.triggered.connect(self.about)
 
+        zoomin_action = QAction(QIcon('pyvicky/staticfiles/zoom-in.png'), 'Zoom in', self)
+        zoomout_action = QAction(QIcon('pyvicky/staticfiles/zoom-out.png'), 'Zoom out', self)
+
         self.toolBar = self.addToolBar("Extraction")
         self.toolBar.addAction(new_action)
         self.toolBar.addAction(trash_action)
         self.toolBar.addAction(run_action)
         self.toolBar.addAction(settings_action)
         self.toolBar.addAction(info_action)
+        self.toolBar.addAction(zoomin_action)
+        self.toolBar.addAction(zoomout_action)
 
     def open_file_name_dialog(self):
         """
@@ -197,7 +202,7 @@ class Window(QMainWindow):
         """
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open file", "",
                                                    "All Files (*);;Python Files (*.py);;INI files (*.ini)",
                                                    options=options)
         if file_name:
@@ -214,7 +219,7 @@ class Window(QMainWindow):
         """
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "",
+        files, _ = QFileDialog.getOpenFileNames(self, "OPen files", "",
                                                 "All Files (*);;Python Files (*.py)", options=options)
         if files:
             logger.debug(files)
@@ -283,7 +288,7 @@ class Window(QMainWindow):
         """
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save File", "",
                                                    "All Files (*);;Text Files (*.txt);;Python Files (*.py)",
                                                    options=options)
         if file_name:
@@ -334,7 +339,7 @@ class Window(QMainWindow):
             return False
         else:
             detour = QMessageBox.question(self,
-                                          "Hold your horses.",
+                                          "Wait a minute!",
                                           "File has unsaved changes. Save now?",
                                           QMessageBox.Yes | QMessageBox.No |
                                           QMessageBox.Cancel)
