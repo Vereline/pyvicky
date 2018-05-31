@@ -32,7 +32,7 @@ Here you can:
 ## Usage
 
 ```python
-pyvicky [filename]... [key]...
+$ pyvicky [filename]... [key]...
 keys:
 -s  # silent mode(disable logging)
 ```
@@ -58,8 +58,8 @@ keys:
 ## Development
 ```
 $ pyvenv venv
-$ venv/bin/activate
-$ pip install -r requirements.txt
+$ source venv/bin/activate
+$ pip install -r requirements-freeze.txt
 ```
 
 ## Contributing
